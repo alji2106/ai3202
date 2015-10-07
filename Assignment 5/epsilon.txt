@@ -1,0 +1,1 @@
+There is no change when using a different epsilon. I used 10, 1, .1, .01, .001, .0001 and.00001 and no change to the path happened for any epsilon.
