@@ -1,18 +1,20 @@
+# Alixandria Jimenez
+# Assignment 6
+# CSCI 3202 AI
+
 import getopt
 import sys
 
-# Define node class to represent each node in the Bayes Net
+# Bayes network node
 class Node:
 	def __init__(self):
 		self.marg = 0
 		self.cond = {}
 		self.name = ""
 		self.parent = []
-		#self.grandparents = []
 		self.child = []
-		#self.grandchildren = []
 
-# Function to create the Bayes network with appropriate nodes
+# Code representation of bayes network graph
 def network():
 	pollutionNode = Node()
 	smokerNode = Node()
@@ -52,8 +54,8 @@ def network():
 	dyspnoeaNode.cond["c"] = 0.65
 	dyspnoeaNode.cond["~c"] = 0.3
 	
-	nodeNetwork = {"smoker": smokerNode, "pollution": pollutionNode, "cancer": cancerNode, "xray": xrayNode, "dyspnoea": dyspnoeaNode}
-	return nodeNetwork
+	leNetwork = {"smoker": smokerNode, "pollution": pollutionNode, "cancer": cancerNode, "xray": xrayNode, "dyspnoea": dyspnoeaNode}
+	return leNetwork
 	
 def newVal(network, arg, value):
 	if arg == "p" or arg == "P":
@@ -64,6 +66,7 @@ def newVal(network, arg, value):
 		smoker.marg = value
 	else:
 		return
+# Marginal #
 	
 def calcM(network, arg):
 	isOpp = False
@@ -106,54 +109,7 @@ def calcM(network, arg):
 	else:
 		return marg
 
-# Helper function to parse the variables included in the joint probability
-def parseJoint(arg):
-	jointVarList = []
-	newArg = ""
-	argLength = len(arg)
-	i = 0
-	while (i < argLength):
-		if arg[i] == "~":
-			i = i + 1
-		newArg = newArg + arg[i].lower()
-		i = i + 1
-	length = len(newArg)
-	for i in range(0, length):
-		newVar = []
-		if len(jointVarList) == 0:
-			newVar.append(newArg[i])
-			newVar.append("~" + newArg[i])
-		else: 
-		    for var in jointVarList:
-			    newVar.append(var + newArg[i])
-			    newVar.append(var + "~" + newArg[i])
-		jointVarList = newVar
-	return jointVarList
-
-# Function to calculate and return the joint probability
-def calcJDistr(network, arg):
-	prob = {}
-	if arg in parseJoint(arg):
-		return calcJProb(network, arg)
-	else:
-	    for var in parseJoint(arg): 
-		    prob[var] = calcJProb(network, var)
-	    return prob
-
-# Function to calculate the probability for individual, specific joint cases
-def calcJProb(network, arg):
-	prob = 1
-	for i in range(0, len(arg)):
-		if arg[i] == "~":
-			i = i + 1
-			newArg = "~" + arg[i]
-			prob = prob * calcC(network, newArg, arg[i+1:])
-		else:
-			prob = prob * calcC(network, arg[i], arg[i+1:])
-		i = i + 1
-	return prob	
-
-# Function to calculate the conditional probability
+# Conditional #
 def calcC(network, arg, con):
 	isOpp = False
 	if arg[0] == '~':
@@ -187,53 +143,17 @@ def calcC(network, arg, con):
 		cond = node.cond[con]
 	else: 
 		return 1
-	'''
-	elif (len(conList) == 1):
-		cond = calcC1(node, network, conList[0])
-	elif (len(conList) == 2):
-		return calcC2(arg, network, conList)
-	elif (len(conList) == 3):
-		print "I'm sorry this doesn't work"
-		return 1
-		#cond = calcC3(arg, network, conList)
-	'''
+	# Need conditionals for one two and three conditionals
+	# somehow based on which network node it's currently on...
 	if isOpp:
 		return 1 - cond
 	else:
 		return cond
 	return 1
-'''
-# Helper function when conditional calculation is needed with one conditional
-def calcC1(node, network, con):
-	notBool = False
-	if con[0] == "~":
-		notBool = True
-		newcon = con[1]
-	else:
-		newcon = con
-	print node.name, node.parent
-	if newcon in node.parent:
-		for parent in node.parent:
-			if parent != newcon:
-				other = parent
-		conditional = node.cond[con + other]*calcM(network, other) + node.cond[con + "~" + other]*calcM(network, "~" + other)
-	elif newcon in node.child:
-		conditional = (calcC(network, con, node.name) * calcM(network, node.name))/calcM(network, con)
-	elif node.child is not []:
-		if newcon in node.child[0].child:
-			conditional = (calcM(network, node.name) * (calcC(network, "c", node.name) * calcC(network, con, "c") + calcC(network, "~c", node.name) * calcC(network, con, "~c")))/calcM(network, con)
-	elif node.parent is not []:
-		if newcon in node.parent[0].parent:
-			for gp in node.parent[0].parent:
-				if gp != newcon:
-					other = gp
-			condP1 = calcC(network, node.name, "c") * (calcC(network, "c", con + other)*calcM(network, other) + calcC(network, "c", con + "~" + other)*calcM(network, "~" + other))
-			condP2 = calcC(network, node.name, "~c")*(calcC(network, "~c", con + other)*calcM(network, other) + calcC(network, "~c", con + "~" + other)*calcM(network, "~" + other))
-			conditional = condP1 + condP2
-	else:
-		conditional = calcC(network, node.name, "c")*calcC(network, "~c", con) + calcC(network, node.name, "~c")*calcC(network, "~c", con)
-	return conditional
-'''
+
+# Joint #
+
+# Begin Main Code #
 
 bayesN = network()
 try:
@@ -261,11 +181,12 @@ for o, a in opts:
         p = a.find("|")
         print(a[:p])
         print(a[p+1:])
+        print "This is barely implemented"
         conditional = calcC(bayesN, a[:p], a[p+1:])
         print("conditional", a, conditional)
     elif o in ("-j"):
         print("flag: ", o)
         print("args: ", a)
-        print(calcJDistr(bayesN, a))
+        print("Not implemented")
     else:
-        assert False, "unhandled option"
+        assert False, "Not an option."
